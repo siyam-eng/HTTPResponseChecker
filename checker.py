@@ -11,11 +11,16 @@ wb = load_workbook(FILE_PATH)
 # takes an url and returns its status code and final redirected url
 def get_response_code(url):
     url = 'https://' + url if not url.startswith('http') else url
-    response = requests.get(url)
-    final_url = response.url
-    status_code = response.status_code
-    if response.history:
-        status_code = response.history[0].status_code
+    try:
+        response = requests.get(url)
+        final_url = response.url
+        status_code = response.status_code
+        if response.history:
+            status_code = response.history[0].status_code
+    except requests.exceptions.ConnectionError:
+        final_url = url 
+        status_code = 'ERROR'
+        
     return (url, final_url, status_code)
 
 
@@ -51,25 +56,28 @@ def generate_input_urls():
 
 def insert_data_to_excel():
     global wb
+
+    # gets the data and inserts it to excel
     def save(url):
         data = get_response_code(url)
         wb['Output'].append(data)
         print(data)
 
+    # applying threading to reduce execution time
     threads = []
     for url in generate_input_urls():
         thread = threading.Thread(target=save, args=[url])
         thread.start()
         threads.append(thread)
         
-    
+    # joining threads so that functions after this run after the completion of the threads
     for thread in threads:
         thread.join()
 
-t1 = time.perf_counter()
-thread = customize_excel_sheet()
-insert_data_to_excel()
-wb.save(FILE_PATH)
-t2 = time.perf_counter()
+def main():
+    customize_excel_sheet()
+    insert_data_to_excel()
+    wb.save(FILE_PATH)
 
-print(t2 -t1)
+
+main()
