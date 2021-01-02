@@ -25,13 +25,17 @@ session.headers.update(HEADER)
 # takes an url and returns its status code and final redirected url
 def get_response_code(url):
     url = 'https://' + url if not url.startswith('http') else url
+    error = None
     try:
         response = session.get(url)
         final_url = response.url
         status_code = response.status_code
-        error = None
         if response.history:
             status_code = response.history[0].status_code
+    except requests.exceptions.SSLError:
+        response = session.get(url, verify=False)
+        final_url = response.url
+        status_code = response.status_code
     except requests.exceptions.ConnectionError as err:
         final_url = url 
         status_code = 'ERROR'
