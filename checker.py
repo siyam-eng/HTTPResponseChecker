@@ -1,27 +1,42 @@
 import requests
+from requests import Session
 from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill
 import threading
-import time
+import random
 
 FILE_PATH = 'Data File.xlsx'
 wb = load_workbook(FILE_PATH)
+
+# creating a session object
+session = Session()
+HEADERS_LIST = [
+    'Mozilla/5.0 (Windows; U; Windows NT 6.1; x64; fr; rv:1.9.2.13) Gecko/20101203 Firebird/3.6.13',
+    'Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201',
+    'Opera/9.80 (X11; Linux i686; Ubuntu/14.10) Presto/2.12.388 Version/12.16',
+    'Mozilla/5.0 (Windows NT 5.2; RW; rv:7.0a1) Gecko/20091211 SeaMonkey/9.23a1pre'
+]
+
+HEADER = {'User-Agent': random.choice(HEADERS_LIST), 'X-Requested-With': 'XMLHttpRequest'}
+session.headers.update(HEADER)
 
 
 # takes an url and returns its status code and final redirected url
 def get_response_code(url):
     url = 'https://' + url if not url.startswith('http') else url
     try:
-        response = requests.get(url)
+        response = session.get(url)
         final_url = response.url
         status_code = response.status_code
+        error = None
         if response.history:
             status_code = response.history[0].status_code
-    except requests.exceptions.ConnectionError:
+    except requests.exceptions.ConnectionError as err:
         final_url = url 
         status_code = 'ERROR'
-        
-    return (url, final_url, status_code)
+        error = str(err)
+    return (url, final_url, status_code, error)
 
 
 def customize_excel_sheet():
@@ -32,7 +47,7 @@ def customize_excel_sheet():
     bg_color = PatternFill(fgColor='E8E8E8', fill_type='solid')
 
     # editing the output sheet
-    output_column = zip(('A',  'B', 'C'), ('URL', 'Final URL', 'HTTP Response'))
+    output_column = zip(('A',  'B', 'C', 'D'), ('URL', 'Final URL', 'HTTP Response', 'Error Details'))
     for col, value in output_column:
         cell = output[f'{col}1']
         cell.value = value
