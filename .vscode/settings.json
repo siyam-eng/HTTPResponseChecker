@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "d:\\01 My Folders\\02 Freelancing Projects\\01_Freelancer\\HTTPResponseChecker\\venv\\Scripts\\python.exe"
+    "python.pythonPath": "d:\\01 My Folders\\02 Freelancing Projects\\01_Freelancer\\HTTPResponseChecker\\venv\\Scripts\\python.exe",
+    "python.formatting.provider": "black"
 }
