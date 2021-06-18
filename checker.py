@@ -97,5 +97,5 @@ def main():
     insert_data_to_excel()
     wb.save(FILE_PATH)
 
-
-main()
+if __name__ == "__main__":
+    main()
